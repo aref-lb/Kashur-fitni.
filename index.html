@@ -101,8 +101,21 @@ const PAL={
  daand:{skin:'#e3ae8a',top:'#f1ede4',sleeve:'#f1ede4',pants:'#3d4148',shoe:'#1f2127'},
  kaani:{skin:'#c8906a',top:'#17366f',sleeve:'#17366f',pants:'#112b5b',shoe:'#1f2127'},
  ali:{skin:'#d9a07a',top:'#4b4640',sleeve:'#4b4640',pants:'#37352f',shoe:'#1f2127'},
- wazul:{skin:'#d8a07c',top:'#2b9094',sleeve:'#2b9094',pants:'#efe6cc',shoe:'#1f2127'}
-};
+ wazul:{skin:'#d8a07c',top:'#e98225',sleeve:'#e98225',pants:'#efe6cc',shoe:'#1f2127'}
+ };
+ const VOICE_LINES={
+  kaani:{start:'Moun moul ous jannat gaar',hit:'Hata paye tawan',special:'Aatankwaad par pellet chala do',super:'Aatankwaad par pellet chala do'},
+  daand:{start:'Ab aap intezaar karenge, jab tak aap sabki goliyan band ho jayengi, tab tak raat ho jayegi',hit:'Hatai 200 unit mufut power',special:'Rooun chuya choose kurmut?',super:'Rooun chuya choose kurmut?'},
+  ali:{start:'Jumurirat ka jinaza nikal gaya',hit:'2 din ka hartal ka ilaan',special:'Kangri dab walai fanna gasak',super:'Kangri dab walai fanna gasak'},
+  wazul:{start:'Modi modi',hit:'Congress choor hai',special:'Kashmir hamarai hai',super:'Kashmir hamarai hai'}
+ };
+ let lastVoice=0;
+ function voiceLine(id,kind){
+  const text=VOICE_LINES[id]&&VOICE_LINES[id][kind];
+  if(!text||!window.speechSynthesis)return;
+  const now=performance.now();if(now-lastVoice<420)return;lastVoice=now;
+  window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=.92;u.pitch=id==='wazul'?1.02:id==='daand'?.82:1;u.volume=.95;window.speechSynthesis.speak(u);
+ }
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();c.fill();}
 function limb(c,x1,y1,x2,y2,w,col){c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();}
 function dot(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();}
@@ -176,7 +189,7 @@ function drawHuman(c,f){
  c.fillStyle=P.top;rr(c,-20,-103,40,long?80:54,9);
  if(id==='daand'){c.fillStyle='#5f6670';rr(c,-20,-103,13,54,5);rr(c,7,-103,13,54,5);}
  if(id==='kaani'){c.fillStyle='#e5c786';c.fillRect(-4,-103,8,54);c.fillStyle='#244b91';poly(c,[[-20,-104],[20,-104],[14,-93],[0,-98],[-14,-93]]);c.fill();}
- if(id==='wazul'){c.fillStyle='#1f6d72';c.fillRect(-3,-103,6,20);}
+ if(id==='wazul'){c.fillStyle='#c95e18';c.fillRect(-3,-103,6,20);c.fillStyle='#ffd36b';for(let i=0;i<8;i++){const an=i*TAU/8;const px=Math.cos(an)*8,py=-82+Math.sin(an)*8;c.save();c.translate(px,py);c.rotate(an);c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(-5,-8,0,-13);c.quadraticCurveTo(5,-8,0,0);c.fill();c.restore();}dot(c,0,-82,4,'#9c431c');}
  if(id==='ali'){c.fillStyle='#8c8272';poly(c,[[-9,-103],[9,-103],[0,-84]]);c.fill();c.fillStyle='#7a6f60';c.fillRect(-20,-30,40,3);
   c.fillStyle='#3f3e42';c.fillRect(-21,-104,10,56);c.fillRect(11,-104,10,52);c.fillStyle='#8b8a8f';for(let y=-96;y<-52;y+=9){c.fillRect(-21,y,10,1.5);c.fillRect(11,y,10,1.5);}
   c.fillStyle='#2b2a2c';for(let i=0;i<4;i++){c.fillRect(-20+i*2.5,-49,1.5,8);c.fillRect(12+i*2.5,-52,1.5,8);}}
@@ -271,12 +284,12 @@ function dashHit(f,o,dmg,kn,gap){
  if(f.rearm>0){f.rearm--;return;}
  if(Math.abs(f.x-o.x)<48&&Math.abs(f.y-o.y)<60&&hurt(o,f,dmg,kn,o.x,GY+o.y-70))f.rearm=gap;
 }
-function startAtk(f,type){sfx('swing');
+ function startAtk(f,type){sfx('swing');voiceLine(f.ch.id,'hit');
  const boss=f.ch.id==='ali'?1.15:1;
  f.st='atk';f.t=0;
  f.atk=type==='p'?{type:'p',su:3,ac:4,re:9,dmg:5*boss,reach:56,kn:3}:{type:'k',su:6,ac:5,re:13,dmg:9*boss,reach:70,kn:6};
 }
-function startSpecial(f,sup){sfx(sup?'super':'special');if(sup){G.flash=10;G.shake=6;}
+ function startSpecial(f,sup){sfx(sup?'super':'special');voiceLine(f.ch.id,sup?'super':'special');if(sup){G.flash=10;G.shake=6;}
  f.st=sup?'super':'special';f.t=0;f.rearm=0;f.atk=null;
  if(sup){f.meter=0;f.cap=f.ch.su;f.capT=80;}else f.cd=140;
 }
@@ -430,7 +443,8 @@ function startMatch(){
  rpw=0;rpl=0;G.round=1;startRound();
 }
 function startRound(){
- [F1,F2].forEach((f,i)=>{f.x=i?560:240;f.y=0;f.vy=0;f.vx=0;f.hp=f.max;f.lag=f.max;f.meter=0;f.st='idle';f.t=0;f.arm=0;f.leg=0;f.form='human';f.air=false;f.cd=0;f.slow=0;f.atk=null;f.cap='';f.capT=0;f.face=i?-1:1;f.fs=f.face;f.aiT=0;f.p=null;f.mv=0;f.sq=0;});
+  [F1,F2].forEach((f,i)=>{f.x=i?560:240;f.y=0;f.vy=0;f.vx=0;f.hp=f.max;f.lag=f.max;f.meter=0;f.st='idle';f.t=0;f.arm=0;f.leg=0;f.form='human';f.air=false;f.cd=0;f.slow=0;f.atk=null;f.cap='';f.capT=0;f.face=i?-1:1;f.fs=f.face;f.aiT=0;f.p=null;f.mv=0;f.sq=0;});
+  voiceLine(F1.ch.id,'start');
  projs=[];parts=[];rings=[];G.flash=0;G.timer=45*60;G.bt=0;G.mode='intro';G.paused=false;show('fight');
 }
 function endRound(){
