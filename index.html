@@ -7,6 +7,9 @@
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 #app{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0d0b12;overflow:hidden}
 #c{display:block}
+#voice{position:absolute;left:50%;top:max(88px,12vh);transform:translateX(-50%) translateY(-8px);z-index:6;display:none;max-width:min(700px,82vw);padding:9px 18px;border:2px solid #ffe39a;border-radius:18px;background:rgba(18,12,24,.9);color:#fff3c7;font:800 clamp(14px,3vh,22px) var(--font);line-height:1.12;text-align:center;text-shadow:0 2px 0 #39220c;box-shadow:0 5px 18px rgba(0,0,0,.35);pointer-events:none}
+#voice.on{display:block;animation:voiceIn .16s ease-out}
+@keyframes voiceIn{from{opacity:0;transform:translateX(-50%) translateY(-18px)}to{opacity:1;transform:translateX(-50%) translateY(-8px)}}
 .scr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:clamp(4px,1.6vh,12px);text-align:center;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5}
 .scr.on{display:flex}
 #title{background:radial-gradient(ellipse at center,rgba(12,9,18,.25),rgba(12,9,18,.78))}
@@ -54,6 +57,7 @@ h2{margin:0;font-weight:800;font-size:clamp(20px,6vh,38px);letter-spacing:.04em;
 </head><body>
 <div id="app">
  <canvas id="c"></canvas>
+ <div id="voice" aria-live="polite"></div>
  <div id="title" class="scr on">
   <h1>KASHUR<br><span>FITNI</span></h1>
   <p class="sub">Fight it out at the Dal. Beat three rivals, then face the boss.</p>
@@ -109,10 +113,12 @@ const PAL={
   ali:{start:'Jumurirat ka jinaza nikal gaya',hit:'2 din ka hartal ka ilaan',special:'Kangri dab walai fanna gasak',super:'Kangri dab walai fanna gasak'},
   wazul:{start:'Modi modi',hit:'Congress choor hai',special:'Kashmir hamarai hai',super:'Kashmir hamarai hai'}
  };
- let lastVoice=0;
+ let lastVoice=0,voiceTimer=0;
  function voiceLine(id,kind){
   const text=VOICE_LINES[id]&&VOICE_LINES[id][kind];
-  if(!text||!window.speechSynthesis)return;
+  if(!text)return;
+  const v=$('voice');v.textContent=text;v.classList.remove('on');void v.offsetWidth;v.classList.add('on');clearTimeout(voiceTimer);voiceTimer=setTimeout(()=>v.classList.remove('on'),2600);
+  if(!window.speechSynthesis)return;
   const now=performance.now();if(now-lastVoice<420)return;lastVoice=now;
   window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=.92;u.pitch=id==='wazul'?1.02:id==='daand'?.82:1;u.volume=.95;window.speechSynthesis.speak(u);
  }
