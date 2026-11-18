@@ -1,4 +1,4 @@
- <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Kashur Fitni</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Kashur Fitni</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
 <style>
@@ -108,19 +108,18 @@ const PAL={
  wazul:{skin:'#d8a07c',top:'#e98225',sleeve:'#e98225',pants:'#efe6cc',shoe:'#1f2127'}
  };
  const VOICE_LINES={
-  kaani:{start:'Moun moul ous jannat gaar',hit:'Hata paye tawan',special:'Aatankwaad par pellet chala do',super:'Aatankwaad par pellet chala do'},
-  daand:{start:'Ab aap intezaar karenge, jab tak aap sabki goliyan band ho jayengi, tab tak raat ho jayegi',hit:'Hatai 200 unit mufut power',special:'Rooun chuya choose kurmut?',super:'Rooun chuya choose kurmut?'},
-  ali:{start:'Jumurirat ka jinaza nikal gaya',hit:'2 din ka hartal ka ilaan',special:'Kangri dab walai fanna gasak',super:'Kangri dab walai fanna gasak'},
-  wazul:{start:'Modi modi',hit:'Congress choor hai',special:'Kashmir hamarai hai',super:'Kashmir hamarai hai'}
+  kaani:{start:'Moun moul ous jannat gaar',hit:'Hata paye tawan',special:'Hoo tafa gasak na yatis',super:'Hoo tafa gasak na yatis'},
+  daand:{start:'Husband choose kiya hai?',hit:'Hatai 200 unit mufut power',special:'Rooun chuya choose kurmut?',super:'Rooun chuya choose kurmut?'},
+  ali:{start:'Jumuriyat ka jinaza nikal gaya',hit:'Doun dohan gaye schoolan chuti',special:'Kangri dab walai fanna gasak',super:'Kangri dab walai fanna gasak'},
+  wazul:{start:'Modi modi',hit:'NC aur PDP choor hai',special:'Kashmir hamarai hai',super:'Kashmir hamarai hai'}
  };
- let lastVoice=0,voiceTimer=0;
+ let voiceTimer=0;
  function voiceLine(id,kind){
   const text=VOICE_LINES[id]&&VOICE_LINES[id][kind];
   if(!text)return;
   const v=$('voice'),speaker=(CH.find(c=>c.id===id)||{name:id}).name;v.textContent=speaker+': '+text;v.classList.remove('on');void v.offsetWidth;v.classList.add('on');clearTimeout(voiceTimer);voiceTimer=setTimeout(()=>v.classList.remove('on'),5200);
   if(!window.speechSynthesis)return;
-  const now=performance.now();if(now-lastVoice<420)return;lastVoice=now;
-  window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=.92;u.pitch=id==='wazul'?1.02:id==='daand'?.82:1;u.volume=.95;window.speechSynthesis.speak(u);
+  const u=new SpeechSynthesisUtterance(text);u.rate=.92;u.pitch=id==='wazul'?1.02:id==='daand'?.82:1;u.volume=.95;window.speechSynthesis.speak(u);
  }
 function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();c.fill();}
 function limb(c,x1,y1,x2,y2,w,col){c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();}
@@ -172,7 +171,7 @@ function drawFg(c){let g;
 
 /* ---------- fighters ---------- */
 function drawChar(c,f,ox,oy){
- c.save();c.translate(ox,oy);c.scale((f.fs===undefined?f.face:f.fs)*(1+(f.sq||0)*.1),1-(f.sq||0)*.12);
+ c.save();c.translate(ox,oy);c.scale((f.fs===undefined?f.face:f.fs)*(1+(f.sq||0)*.1),1.1-(f.sq||0)*.12);
  if(f.form==='bull')drawBull(c,f);else if(f.form==='lotus')drawLotus(c,f);else drawHuman(c,f);
  c.restore();
 }
@@ -188,8 +187,8 @@ function drawHuman(c,f){
  const fx=air?12:9+w*9+k*50,fy=air?-22:-3-k*38;
  limb(c,6,hy,fx,fy-4,14,P.pants);ell(c,fx+3,fy,11,5,P.shoe);
  // back arm
- const blk=f.block;
- const bax=blk?12:-22,bay=blk?-110:-66;
+ const blk=f.block,action=f.st==='atk'||f.st==='special'||f.st==='super';
+ const bax=blk?12:action?-34:-22,bay=blk?-110:action?-84:-66;
  limb(c,-15,-94,bax,bay,12,P.sleeve);dot(c,bax,bay,7,P.skin);
  // torso
  c.fillStyle=P.top;rr(c,-20,-103,40,long?80:54,9);
@@ -252,7 +251,7 @@ function drawLotus(c,f){
 }
 
 /* ---------- game state ---------- */
-const G={mode:'menu',pick:null,player:null,ladder:[],stage:0,round:1,timer:0,bt:0,stop:0,shake:0,paused:false,frame:0};
+ const G={mode:'menu',pick:null,player:null,ladder:[],stage:0,round:1,timer:0,bt:0,stop:0,shake:0,paused:false,frame:0,superCue:0,superWho:null};
 let F1=null,F2=null,projs=[],parts=[],rings=[],rpw=0,rpl=0;
 const DF={easy:{n:'EASY',rt:[18,38],blk:.3,dmg:.65,hp:.8,lv:-.4,sup:.35,pun:0,spd:.88},medium:{n:'MEDIUM',rt:[8,22],blk:1,dmg:1,hp:1,lv:0,sup:.7,pun:.25,spd:1},hard:{n:'HARD',rt:[3,10],blk:1.9,dmg:1.3,hp:1.2,lv:.9,sup:1,pun:.75,spd:1.12}};
 let DIFF='medium';try{DIFF=localStorage.getItem('kf_d')||'medium';}catch(_){}
@@ -295,7 +294,7 @@ function dashHit(f,o,dmg,kn,gap){
  f.st='atk';f.t=0;
  f.atk=type==='p'?{type:'p',su:3,ac:4,re:9,dmg:5*boss,reach:56,kn:3}:{type:'k',su:6,ac:5,re:13,dmg:9*boss,reach:70,kn:6};
 }
- function startSpecial(f,sup){sfx(sup?'super':'special');voiceLine(f.ch.id,sup?'super':'special');if(sup){G.flash=10;G.shake=6;}
+ function startSpecial(f,sup){sfx(sup?'super':'special');voiceLine(f.ch.id,sup?'super':'special');if(sup){G.flash=16;G.shake=8;G.stop=16;G.superCue=34;G.superWho=f;}
  f.st=sup?'super':'special';f.t=0;f.rearm=0;f.atk=null;
  if(sup){f.meter=0;f.cap=f.ch.su;f.capT=80;}else f.cd=140;
 }
@@ -450,7 +449,7 @@ function startMatch(){
 }
 function startRound(){
   [F1,F2].forEach((f,i)=>{f.x=i?560:240;f.y=0;f.vy=0;f.vx=0;f.hp=f.max;f.lag=f.max;f.meter=0;f.st='idle';f.t=0;f.arm=0;f.leg=0;f.form='human';f.air=false;f.cd=0;f.slow=0;f.atk=null;f.cap='';f.capT=0;f.face=i?-1:1;f.fs=f.face;f.aiT=0;f.p=null;f.mv=0;f.sq=0;});
- projs=[];parts=[];rings=[];G.flash=0;G.timer=45*60;G.bt=0;G.mode='intro';G.paused=false;show('fight');setTimeout(()=>voiceLine(F1.ch.id,'start'),80);
+ projs=[];parts=[];rings=[];G.flash=0;G.superCue=0;G.superWho=null;G.timer=45*60;G.bt=0;G.mode='intro';G.paused=false;show('fight');setTimeout(()=>voiceLine(F1.ch.id,'start'),80);
 }
 function endRound(){
  let w=null;
@@ -479,7 +478,8 @@ function update(){
   return;
  }
  if(G.mode!=='fight'&&G.mode!=='ko')return;
- if(G.stop>0){G.stop--;return;}
+  if(G.stop>0){G.stop--;G.superCue=Math.max(0,G.superCue-1);return;}
+  if(G.superCue>0)G.superCue--;
  G.shake*=.85;
  if(G.mode==='fight'){
   const i1={l:keys.l,r:keys.r,b:keys.b,j:press.j>0,p:press.p>0,k:press.k>0,s:press.s>0,u:press.u>0},s0=F1.st,a0=F1.air;
@@ -558,7 +558,8 @@ function render(){
  parts.forEach(q=>{cx.globalAlpha=Math.min(1,q.l/10);dot(cx,q.x,q.y,q.r,q.c);});cx.globalAlpha=1;
  rings.forEach(r=>{const a=r.l/16;cx.strokeStyle='rgba(255,240,180,'+a+')';cx.lineWidth=3*a+1;cx.beginPath();cx.arc(r.x,r.y,r.r,0,TAU);cx.stroke();});
  [F1,F2].forEach(f=>{if(f.capT>0)txt(f.ch.su.toUpperCase()+'!',Math.max(110,Math.min(690,f.x)),GY+f.y-185-(80-f.capT)*.3,20,'#ffd25a');});
- cx.restore();
+  cx.restore();
+  if(G.superCue>0&&G.superWho){const q=G.superCue/34,g=cx.createRadialGradient(G.superWho.x,GY-78,8,G.superWho.x,GY-78,260);g.addColorStop(0,'rgba(255,241,170,'+(.62*q)+')');g.addColorStop(1,'rgba(255,120,40,0)');cx.fillStyle=g;cx.fillRect(0,0,W,H);cx.fillStyle='rgba(12,9,18,'+(.22*q)+')';cx.fillRect(0,0,W,H);for(let i=0;i<8;i++){cx.save();cx.translate(G.superWho.x,GY-78);cx.rotate(i*TAU/8+G.frame*.02);cx.fillStyle='rgba(255,230,130,'+(.45*q)+')';cx.fillRect(0,-2,170*q,4);cx.restore();}txt('SUPER!',400,126,58,'#fff3b0');txt(G.superWho.ch.su.toUpperCase(),400,170,22,'#ffd25a');}
  hud();banner();
  if(G.flash>0){cx.fillStyle='rgba(255,240,200,'+G.flash/20+')';cx.fillRect(0,0,W,H);}
  const rdy=F1.meter>=100;if($('bu').classList.contains('rdy')!==rdy)$('bu').classList.toggle('rdy',rdy);
