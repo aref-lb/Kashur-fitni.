@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Kashur Fitni</title>
+ <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Kashur Fitni</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
 <style>
@@ -7,7 +7,7 @@
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 #app{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0d0b12;overflow:hidden}
 #c{display:block}
-#voice{position:absolute;left:50%;top:max(88px,12vh);transform:translateX(-50%) translateY(-8px);z-index:6;display:none;max-width:min(700px,82vw);padding:9px 18px;border:2px solid #ffe39a;border-radius:18px;background:rgba(18,12,24,.9);color:#fff3c7;font:800 clamp(14px,3vh,22px) var(--font);line-height:1.12;text-align:center;text-shadow:0 2px 0 #39220c;box-shadow:0 5px 18px rgba(0,0,0,.35);pointer-events:none}
+#voice{position:absolute;left:50%;top:max(72px,10vh);transform:translateX(-50%) translateY(-8px);z-index:30;display:none;max-width:min(760px,86vw);padding:10px 18px;border:2px solid #ffe39a;border-radius:18px;background:rgba(18,12,24,.94);color:#fff3c7;font:800 clamp(14px,3vh,22px) var(--font);line-height:1.12;text-align:center;text-shadow:0 2px 0 #39220c;box-shadow:0 5px 18px rgba(0,0,0,.45);pointer-events:none}
 #voice.on{display:block;animation:voiceIn .16s ease-out}
 @keyframes voiceIn{from{opacity:0;transform:translateX(-50%) translateY(-18px)}to{opacity:1;transform:translateX(-50%) translateY(-8px)}}
 .scr{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:clamp(4px,1.6vh,12px);text-align:center;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5}
@@ -117,7 +117,7 @@ const PAL={
  function voiceLine(id,kind){
   const text=VOICE_LINES[id]&&VOICE_LINES[id][kind];
   if(!text)return;
-  const v=$('voice');v.textContent=text;v.classList.remove('on');void v.offsetWidth;v.classList.add('on');clearTimeout(voiceTimer);voiceTimer=setTimeout(()=>v.classList.remove('on'),2600);
+  const v=$('voice'),speaker=(CH.find(c=>c.id===id)||{name:id}).name;v.textContent=speaker+': '+text;v.classList.remove('on');void v.offsetWidth;v.classList.add('on');clearTimeout(voiceTimer);voiceTimer=setTimeout(()=>v.classList.remove('on'),5200);
   if(!window.speechSynthesis)return;
   const now=performance.now();if(now-lastVoice<420)return;lastVoice=now;
   window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=.92;u.pitch=id==='wazul'?1.02:id==='daand'?.82:1;u.volume=.95;window.speechSynthesis.speak(u);
@@ -450,8 +450,7 @@ function startMatch(){
 }
 function startRound(){
   [F1,F2].forEach((f,i)=>{f.x=i?560:240;f.y=0;f.vy=0;f.vx=0;f.hp=f.max;f.lag=f.max;f.meter=0;f.st='idle';f.t=0;f.arm=0;f.leg=0;f.form='human';f.air=false;f.cd=0;f.slow=0;f.atk=null;f.cap='';f.capT=0;f.face=i?-1:1;f.fs=f.face;f.aiT=0;f.p=null;f.mv=0;f.sq=0;});
-  voiceLine(F1.ch.id,'start');
- projs=[];parts=[];rings=[];G.flash=0;G.timer=45*60;G.bt=0;G.mode='intro';G.paused=false;show('fight');
+ projs=[];parts=[];rings=[];G.flash=0;G.timer=45*60;G.bt=0;G.mode='intro';G.paused=false;show('fight');setTimeout(()=>voiceLine(F1.ch.id,'start'),80);
 }
 function endRound(){
  let w=null;
